@@ -9,7 +9,7 @@ export {
 	## The ports to register NATS for.
 	const ports = {
 		# TODO: Replace with actual port(s).
-		12345/tcp,
+		4222/tcp,
 	} &redef;
 
 	## Record type containing the column fields of the NATS log.
@@ -103,7 +103,5 @@ event NATS::reply(c: connection, is_orig: bool, payload: string)
 
 hook finalize_nats(c: connection)
 	{
-	# TODO: For UDP protocols, you may want to do this after every request
-	# and/or reply.
 	emit_log(c);
 	}

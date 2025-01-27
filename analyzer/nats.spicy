@@ -1,11 +1,146 @@
-# TODO: Define your analyzer here.
-
 module NATS;
 
+const MAX_SIZE = 1024 * 1024;
+
+# Bytes with a max size ending with CRLF
+type SizedBytes = unit {
+    data: bytes &until=b"\x0d\x0a" &max-size=MAX_SIZE;
+} &convert=self.data;
+
+# TODO: I really want to enumerate all possible commands here for correctness, but
+# it can't be case insensitive :/
+#const ClientCommands = /(CONNECT|pub|HPUB|SUB|UNSUB|PING|PONG)/;
+#const ServerCommands = /(INFO|MSG|HMSG|PING|PONG|+OK|-ERR)/;
+
+type Command = enum {
+    INFO,
+    CONNECT,
+    PUB,
+    HPUB,
+    SUB,
+    UNSUB,
+    MSG,
+    HMSG,
+    PING,
+    PONG,
+    OK,
+    ERR,
+};
+
+function to_command(parsed: bytes) : Command {
+    switch (parsed.upper()) {
+        case b"INFO": return Command::INFO;
+        case b"CONNECT": return Command::CONNECT;
+        case b"PUB": return Command::PUB;
+        case b"HPUB": return Command::HPUB;
+        case b"SUB": return Command::SUB;
+        case b"UNSUB": return Command::UNSUB;
+        case b"MSG": return Command::MSG;
+        case b"HMSG": return Command::HMSG;
+        case b"PING": return Command::PING;
+        case b"PONG": return Command::PONG;
+        case b"+OK": return Command::OK;
+        case b"-ERR": return Command::ERR;
+    }
+}
+
 public type ClientMessages = unit {
-    payload: bytes &eod;
+    : ClientData[];
+};
+
+type ClientData = unit {
+    message_type: /[[:lower:][:upper:]]+/ &convert=to_command($$);
+    # Optional whitespace
+    : /[ \t]+/;
+    switch (self.message_type) {
+        Command::CONNECT -> connect: Connect;
+        Command::PUB -> pub: Pub;
+        Command::HPUB -> hpub: HPub;
+        Command::SUB -> sub: Sub;
+        Command::UNSUB -> unsub: Unsub;
+        # No payloads
+        Command::PING, Command::PONG -> : void;
+    };
 };
 
 public type ServerMessages = unit {
-    payload: bytes &eod;
+    : ServerData[];
+};
+
+type ServerData = unit {
+    message_type: /[[:lower:][:upper:]]+/ &convert=to_command($$);
+    # Optional whitespace
+    : /[ \t]+/;
+    switch (self.message_type) {
+        Command::INFO -> info: Info;
+        Command::MSG -> msg: Msg;
+        Command::HMSG -> hmsg: HMsg;
+        Command::ERR -> err: Err;
+        # No payloads
+        Command::PING, Command::PONG, Command::OK -> : void;
+    };
+
+};
+
+type Info = unit {
+    # TODO
+    payload: SizedBytes;
+};
+
+type Connect = unit {
+    # TODO
+    payload: SizedBytes;
+};
+
+type Pub = unit {
+    subject: bytes &max-size=MAX_SIZE &until=b" ";
+    # TODO: Optionally can have reply-to here but dunno how to do that
+    num_bytes: SizedBytes &convert=$$.to_int();
+    payload: SizedBytes;
+};
+
+type HPub = unit {
+    subject: bytes &max-size=MAX_SIZE &until=b" ";
+    # TODO: Optionally can have reply-to here but dunno how to do that
+    header_bytes: bytes &max-size=MAX_SIZE &until=b" " &convert=$$.to_int();
+    total_bytes: SizedBytes &convert=$$.to_int();
+    # Note, two CRLF
+    # TODO: Put this in a map
+    headers: bytes &max-size=MAX_SIZE &until=b"\x0d\x0a\x0d\x0a";
+    payload: SizedBytes;
+};
+
+type Sub = unit {
+    subject: bytes &max-size=MAX_SIZE &until=b" ";
+    # TODO: queue group
+    sid: SizedBytes;
+};
+
+type Unsub = unit {
+    sid: SizedBytes;
+    # TODO: max_msgs
+};
+
+type Msg = unit {
+    subject: bytes &max-size=MAX_SIZE &until=b" ";
+    sid: bytes &max-size=MAX_SIZE &until=b" ";
+    # TODO: reply-to
+    num_bytes: SizedBytes &convert=$$.to_int();
+    payload: SizedBytes;
+};
+
+type HMsg = unit {
+    subject: bytes &max-size=MAX_SIZE &until=b" ";
+    sid: bytes &max-size=MAX_SIZE &until=b" ";
+    # TODO: reply-to
+    header_bytes: bytes &max-size=MAX_SIZE &until=b" " &convert=$$.to_int();
+    total_bytes: SizedBytes &convert=$$.to_int();
+    # Note, two CRLF
+    # TODO: Put this in a map
+    headers: bytes &max-size=MAX_SIZE &until=b"\x0d\x0a\x0d\x0a";
+    payload: SizedBytes;
+};
+
+type Err = unit {
+    message: SizedBytes;
 };
