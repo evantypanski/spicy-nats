@@ -1,0 +1,11 @@
+# TODO: Define your analyzer here.
+
+module NATS;
+
+public type ClientMessages = unit {
+    payload: bytes &eod;
+};
+
+public type ServerMessages = unit {
+    payload: bytes &eod;
+};

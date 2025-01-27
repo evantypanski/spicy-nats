@@ -1,0 +1,17 @@
+import NATS;
+import Zeek_NATS;
+
+# TODO: Adjust below how/when the analyzer will be activated. The example
+# defines a well-known port to trigger it. For more information, see:
+#
+#   https://docs.zeek.org/projects/spicy/en/latest/zeek.html#interface-definitions-evt-files
+#
+protocol analyzer NATS over TCP:
+    parse originator with NATS::ClientMessages,
+    parse responder with NATS::ServerMessages;
+
+# TODO: Connect Spicy-side events with Zeek-side events. The example just
+# defines simple example events that forwards the raw data (which in practice
+# you don't want to do!).
+on NATS::ClientMessages -> event NATS::request($conn, $is_orig, self.payload);
+on NATS::ServerMessages -> event NATS::reply($conn, $is_orig, self.payload);
