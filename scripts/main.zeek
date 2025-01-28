@@ -84,21 +84,21 @@ function emit_log(c: connection)
 	}
 
 # Example event defined in nats.evt.
-event NATS::request(c: connection, is_orig: bool, payload: string)
+event NATS::request(c: connection, is_orig: bool, message_type: NATS::Command)
 	{
 	hook set_session(c);
 
 	local info = c$nats;
-	info$request = payload;
+	#info$request = payload;
 	}
 
 # Example event defined in nats.evt.
-event NATS::reply(c: connection, is_orig: bool, payload: string)
+event NATS::reply(c: connection, is_orig: bool, message_type: NATS::Command)
 	{
 	hook set_session(c);
 
 	local info = c$nats;
-	info$reply = payload;
+	#info$reply = payload;
 	}
 
 hook finalize_nats(c: connection)

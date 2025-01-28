@@ -3,7 +3,10 @@ import Zeek_NATS;
 
 protocol analyzer NATS over TCP:
     parse originator with NATS::ClientMessages,
-    parse responder with NATS::ServerMessages;
+    parse responder with NATS::ServerMessages,
+    port 4222/tcp;
 
-on NATS::ClientData -> event NATS::request($conn, $is_orig, self.payload);
-on NATS::ServerData -> event NATS::reply($conn, $is_orig, self.payload);
+export NATS::Command;
+
+on NATS::ClientData -> event NATS::request($conn, $is_orig, self.message_type);
+on NATS::ServerData -> event NATS::reply($conn, $is_orig, self.message_type);

@@ -45,41 +45,42 @@ function to_command(parsed: bytes) : Command {
 }
 
 public type ClientMessages = unit {
-    : ClientData[];
+    : ClientData[] foreach { print $$; }
 };
 
 type ClientData = unit {
     message_type: /[[:lower:][:upper:]]+/ &convert=to_command($$);
     # Optional whitespace
-    : /[ \t]+/;
+    : /[ \t]*/;
     switch (self.message_type) {
         Command::CONNECT -> connect: Connect;
         Command::PUB -> pub: Pub;
         Command::HPUB -> hpub: HPub;
         Command::SUB -> sub: Sub;
         Command::UNSUB -> unsub: Unsub;
-        # No payloads
-        Command::PING, Command::PONG -> : void;
+        # No payloads, parse the CRLF though
+        # TODO: Ensure this is CRLF
+        Command::PING, Command::PONG -> : int16;
     };
 };
 
 public type ServerMessages = unit {
-    : ServerData[];
+    : ServerData[] foreach { print $$; }
 };
 
 type ServerData = unit {
     message_type: /[[:lower:][:upper:]]+/ &convert=to_command($$);
     # Optional whitespace
-    : /[ \t]+/;
+    : /[ \t]*/;
     switch (self.message_type) {
         Command::INFO -> info: Info;
         Command::MSG -> msg: Msg;
         Command::HMSG -> hmsg: HMsg;
         Command::ERR -> err: Err;
-        # No payloads
-        Command::PING, Command::PONG, Command::OK -> : void;
+        # No payloads, parse the CRLF though
+        # TODO: Ensure this is CRLF
+        Command::PING, Command::PONG, Command::OK -> : int16;
     };
-
 };
 
 type Info = unit {
