@@ -95,16 +95,33 @@ type Connect = unit {
 
 type Pub = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
-    # TODO: Optionally can have reply-to here but dunno how to do that
-    num_bytes: SizedBytes &convert=$$.to_int();
+
+    # Parse an optional string, then a number, then CRLF.
+    var reply_to: bytes;
+    var num_bytes: int64;
+
+    : /(.*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
+        # Strip off possible whitespace
+        self.reply_to = $1.strip();
+        self.num_bytes = $2.to_int();
+    }
+
     payload: SizedBytes;
 };
 
 type HPub = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
-    # TODO: Optionally can have reply-to here but dunno how to do that
-    header_bytes: bytes &max-size=MAX_SIZE &until=b" " &convert=$$.to_int();
-    total_bytes: SizedBytes &convert=$$.to_int();
+
+    # Parse an optional string, then a number, then CRLF.
+    var reply_to: bytes;
+    var num_bytes: int64;
+
+    : /(.*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
+        # Strip off possible whitespace
+        self.reply_to = $1.strip();
+        self.num_bytes = $2.to_int();
+    }
+
     # Note, two CRLF
     # TODO: Put this in a map
     headers: bytes &max-size=MAX_SIZE &until=b"\x0d\x0a\x0d\x0a";
@@ -113,29 +130,61 @@ type HPub = unit {
 
 type Sub = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
-    # TODO: queue group
-    sid: SizedBytes;
+
+    # Parse an optional string, then an alphanumeric subscriber ID
+    var queue_group: bytes;
+    var sid: bytes;
+
+    : /(.*)[ ]*([[:upper:][:lower:][:digit:]])+\r\n/ &max-size=MAX_SIZE {
+        self.queue_group = $1.strip();
+        self.sid = $2;
+    }
 };
 
 type Unsub = unit {
-    sid: SizedBytes;
-    # TODO: max_msgs
+    # Parse an optional string, then a number, then CRLF.
+    var sid: bytes;
+    var max_msgs: int64;
+
+    : /(.+)[ ]*([[:digit:]])*\r\n/ &max-size=MAX_SIZE {
+        # Strip off the possible whitespace
+        self.sid = $1.strip();
+        self.max_msgs = $2.to_int();
+    }
 };
 
 type Msg = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
     sid: bytes &max-size=MAX_SIZE &until=b" ";
-    # TODO: reply-to
-    num_bytes: SizedBytes &convert=$$.to_int();
+
+    # Parse an optional string, then a number, then CRLF.
+    var reply_to: bytes;
+    var num_bytes: int64;
+
+    : /(.*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
+        self.reply_to = $1.strip();
+        self.num_bytes = $2.to_int();
+    }
+
     payload: SizedBytes;
 };
 
 type HMsg = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
     sid: bytes &max-size=MAX_SIZE &until=b" ";
-    # TODO: reply-to
-    header_bytes: bytes &max-size=MAX_SIZE &until=b" " &convert=$$.to_int();
+
+    # Parse an optional string, then a number, then space.
+    var reply_to: bytes;
+    var header_bytes: int64;
+
+    : /(.*)[ ]*([[:digit:]])+[ ]+/ &max-size=MAX_SIZE {
+        self.reply_to = $1.strip();
+        self.header_bytes = $2.to_int();
+    }
+
+    # We only got to the header bytes before, parse the total bytes now
     total_bytes: SizedBytes &convert=$$.to_int();
+
     # Note, two CRLF
     # TODO: Put this in a map
     headers: bytes &max-size=MAX_SIZE &until=b"\x0d\x0a\x0d\x0a";
