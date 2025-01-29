@@ -45,10 +45,10 @@ function to_command(parsed: bytes) : Command {
 }
 
 public type ClientMessages = unit {
-    : ClientData[] foreach { print $$; }
+    : ClientData[];
 };
 
-type ClientData = unit {
+public type ClientData = unit {
     message_type: /[[:lower:][:upper:]]+/ &convert=to_command($$);
     # Optional whitespace
     : /[ \t]*/;
@@ -65,10 +65,10 @@ type ClientData = unit {
 };
 
 public type ServerMessages = unit {
-    : ServerData[] foreach { print $$; }
+    : ServerData[] ;
 };
 
-type ServerData = unit {
+public type ServerData = unit {
     message_type: /[[:lower:][:upper:]]+/ &convert=to_command($$);
     # Optional whitespace
     : /[ \t]*/;
@@ -98,14 +98,15 @@ type Pub = unit {
 
     # Parse an optional string, then a number, then CRLF.
     var reply_to: bytes;
-    var num_bytes: int64;
+    var num_bytes: uint64;
 
-    : /(.*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
+    : /([[:upper:][:lower:][:digit:] "'\*\$_\.]*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
         # Strip off possible whitespace
         self.reply_to = $1.strip();
-        self.num_bytes = $2.to_int();
+        self.num_bytes = $2.to_uint();
     }
 
+    # TODO: This should just be num_bytes size
     payload: SizedBytes;
 };
 
@@ -116,7 +117,7 @@ type HPub = unit {
     var reply_to: bytes;
     var num_bytes: int64;
 
-    : /(.*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
+    : /([[:upper:][:lower:][:digit:] "'\*\$_\.]*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
         # Strip off possible whitespace
         self.reply_to = $1.strip();
         self.num_bytes = $2.to_int();
@@ -135,7 +136,7 @@ type Sub = unit {
     var queue_group: bytes;
     var sid: bytes;
 
-    : /(.*)[ ]*([[:upper:][:lower:][:digit:]])+\r\n/ &max-size=MAX_SIZE {
+    : /([[:upper:][:lower:][:digit:] "'\*\$_\.]*)[ ]*([[:upper:][:lower:][:digit:]])+\r\n/ &max-size=MAX_SIZE {
         self.queue_group = $1.strip();
         self.sid = $2;
     }
@@ -161,7 +162,7 @@ type Msg = unit {
     var reply_to: bytes;
     var num_bytes: int64;
 
-    : /(.*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
+    : /([[:upper:][:lower:][:digit:] "'\*\$_\.]*)[ ]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
         self.reply_to = $1.strip();
         self.num_bytes = $2.to_int();
     }
@@ -177,7 +178,7 @@ type HMsg = unit {
     var reply_to: bytes;
     var header_bytes: int64;
 
-    : /(.*)[ ]*([[:digit:]])+[ ]+/ &max-size=MAX_SIZE {
+    : /([[:upper:][:lower:][:digit:] "'\*\$_\.]*)[ ]*([[:digit:]])+[ ]+/ &max-size=MAX_SIZE {
         self.reply_to = $1.strip();
         self.header_bytes = $2.to_int();
     }

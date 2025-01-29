@@ -45,23 +45,11 @@ redef record connection += {
 
 redef likely_server_ports += { ports };
 
-# TODO: If you're going to send file data into the file analysis framework, you
-# need to provide a file handle function. This is a simple example that's
-# sufficient if the protocol only transfers a single, complete file at a time.
-#
-# function get_file_handle(c: connection, is_orig: bool): string
-# 	{
-# 	return cat(Analyzer::ANALYZER_NATS, c$start_time, c$id, is_orig);
-# 	}
-
 event zeek_init() &priority=5
 	{
 	Log::create_stream(NATS::LOG, [$columns=Info, $ev=log_nats, $path="nats", $policy=log_policy]);
 
 	Analyzer::register_for_ports(Analyzer::ANALYZER_NATS, ports);
-
-	# TODO: To activate the file handle function above, uncomment this.
-	# Files::register_protocol(Analyzer::ANALYZER_NATS, [$get_file_handle=NATS::get_file_handle ]);
 	}
 
 # Initialize logging state.
@@ -84,21 +72,20 @@ function emit_log(c: connection)
 	}
 
 # Example event defined in nats.evt.
-event NATS::request(c: connection, is_orig: bool, message_type: NATS::Command)
+event NATS::request(c: connection, is_orig: bool, message: NATS::ClientData)
 	{
 	hook set_session(c);
 
-	local info = c$nats;
-	#info$request = payload;
+    #print "client", message;
 	}
 
 # Example event defined in nats.evt.
-event NATS::reply(c: connection, is_orig: bool, message_type: NATS::Command)
+event NATS::reply(c: connection, is_orig: bool, message: NATS::ServerData)
 	{
 	hook set_session(c);
 
 	local info = c$nats;
-	#info$reply = payload;
+    #print "reply", message;
 	}
 
 hook finalize_nats(c: connection)
