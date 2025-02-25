@@ -7,10 +7,10 @@ type SizedBytes = unit {
     data: bytes &until=b"\x0d\x0a" &max-size=MAX_SIZE;
 } &convert=self.data;
 
-# TODO: I really want to enumerate all possible commands here for correctness, but
-# it can't be case insensitive :/
-#const ClientCommands = /(CONNECT|pub|HPUB|SUB|UNSUB|PING|PONG)/;
-#const ServerCommands = /(INFO|MSG|HMSG|PING|PONG|+OK|-ERR)/;
+# TODO: Make these insensitive, current Spicy main with insensitive regex fails right now,
+# see https://github.com/zeek/zeek/issues/4238
+const ClientCommands = /(CONNECT|PUB|HPUB|SUB|UNSUB|PING|PONG)/;
+const ServerCommands = /(INFO|MSG|HMSG|PING|PONG|+OK|-ERR)/;
 
 type Command = enum {
     INFO,
@@ -49,7 +49,7 @@ public type ClientMessages = unit {
 };
 
 public type ClientData = unit {
-    message_type: /[[:lower:][:upper:]]+/ &convert=to_command($$);
+    message_type: ClientCommands &convert=to_command($$);
     # Optional whitespace
     : /[ \t]*/;
     switch (self.message_type) {
@@ -59,8 +59,7 @@ public type ClientData = unit {
         Command::SUB -> sub: Sub;
         Command::UNSUB -> unsub: Unsub;
         # No payloads, parse the CRLF though
-        # TODO: Ensure this is CRLF
-        Command::PING, Command::PONG -> : int16;
+        Command::PING, Command::PONG -> : b"\x0d\x0a";
     };
 };
 
@@ -69,7 +68,7 @@ public type ServerMessages = unit {
 };
 
 public type ServerData = unit {
-    message_type: /[[:lower:][:upper:]]+/ &convert=to_command($$);
+    message_type: ServerCommands &convert=to_command($$);
     # Optional whitespace
     : /[ \t]*/;
     switch (self.message_type) {
@@ -78,19 +77,35 @@ public type ServerData = unit {
         Command::HMSG -> hmsg: HMsg;
         Command::ERR -> err: Err;
         # No payloads, parse the CRLF though
-        # TODO: Ensure this is CRLF
-        Command::PING, Command::PONG, Command::OK -> : int16;
+        Command::PING, Command::PONG, Command::OK -> : b"\x0d\x0a";
     };
+
+};
+
+type KeyValPair = unit {
+    # TODO: this is string only
+    key: bytes &until=b":";
+    # TODO: Escaped quotes
+    val: /(true|false)|"[^"]*"|[[:digit:]]+/;
+    : /,?/;
+};
+
+type KeyVal = unit {
+    : b"{";
+    pairs: KeyValPair[];
+    : b"}";
+    # Whitespace can apparently appear after
+    : /[ \t]*/;
 };
 
 type Info = unit {
-    # TODO
-    payload: SizedBytes;
+    payload: KeyVal;
+    : b"\x0d\x0a";
 };
 
 type Connect = unit {
-    # TODO
-    payload: SizedBytes;
+    payload: KeyVal;
+    : b"\x0d\x0a";
 };
 
 type Pub = unit {
@@ -124,8 +139,8 @@ type HPub = unit {
     }
 
     # Note, two CRLF
-    # TODO: Put this in a map
-    headers: bytes &max-size=MAX_SIZE &until=b"\x0d\x0a\x0d\x0a";
+    headers: KeyVal;
+    : b"\x0d\x0a\x0d\x0a";
     payload: SizedBytes;
 };
 
@@ -187,8 +202,8 @@ type HMsg = unit {
     total_bytes: SizedBytes &convert=$$.to_int();
 
     # Note, two CRLF
-    # TODO: Put this in a map
-    headers: bytes &max-size=MAX_SIZE &until=b"\x0d\x0a\x0d\x0a";
+    headers: KeyVal;
+    : b"\x0d\x0a\x0d\x0a";
     payload: SizedBytes;
 };
 
