@@ -7,6 +7,9 @@ type SizedBytes = unit {
     data: bytes &until=b"\x0d\x0a" &max-size=MAX_SIZE;
 } &convert=self.data;
 
+# Whitespace is optional in many places
+const OptWhitespace = /[ \t]*/;
+
 # TODO: Make these insensitive, current Spicy main with insensitive regex fails right now,
 # see https://github.com/zeek/zeek/issues/4238
 const ClientCommands = /(CONNECT|PUB|HPUB|SUB|UNSUB|PING|PONG)/;
@@ -50,8 +53,7 @@ public type ClientMessages = unit {
 
 public type ClientData = unit {
     message_type: ClientCommands &convert=to_command($$);
-    # Optional whitespace
-    : /[ \t]*/;
+    : OptWhitespace;
     switch (self.message_type) {
         Command::CONNECT -> connect: Connect;
         Command::PUB -> pub: Pub;
@@ -69,8 +71,7 @@ public type ServerMessages = unit {
 
 public type ServerData = unit {
     message_type: ServerCommands &convert=to_command($$);
-    # Optional whitespace
-    : /[ \t]*/;
+    : OptWhitespace;
     switch (self.message_type) {
         Command::INFO -> info: Info;
         Command::MSG -> msg: Msg;
@@ -79,37 +80,41 @@ public type ServerData = unit {
         # No payloads, parse the CRLF though
         Command::PING, Command::PONG, Command::OK -> : b"\x0d\x0a";
     };
-
 };
 
 type KeyValPair = unit {
     # TODO: this is string only
     key: bytes &until=b":";
+    : OptWhitespace;
     # TODO: Escaped quotes
     val: /(true|false)|"[^"]*"|[[:digit:]]+/;
+    : OptWhitespace;
     : /,?/;
+    : OptWhitespace;
 };
 
 type KeyVal = unit {
     : b"{";
+    : OptWhitespace;
     pairs: KeyValPair[];
     : b"}";
-    # Whitespace can apparently appear after
-    : /[ \t]*/;
 };
 
 type Info = unit {
     payload: KeyVal;
+    : OptWhitespace;
     : b"\x0d\x0a";
 };
 
 type Connect = unit {
     payload: KeyVal;
+    : OptWhitespace;
     : b"\x0d\x0a";
 };
 
 type Pub = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
+    : OptWhitespace;
 
     # Parse an optional string, then a number, then CRLF.
     var reply_to: bytes;
@@ -127,6 +132,7 @@ type Pub = unit {
 
 type HPub = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
+    : OptWhitespace;
 
     # Parse an optional string, then a number, then CRLF.
     var reply_to: bytes;
@@ -146,6 +152,7 @@ type HPub = unit {
 
 type Sub = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
+    : OptWhitespace;
 
     # Parse an optional string, then an alphanumeric subscriber ID
     var queue_group: bytes;
@@ -171,7 +178,9 @@ type Unsub = unit {
 
 type Msg = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
+    : OptWhitespace;
     sid: bytes &max-size=MAX_SIZE &until=b" ";
+    : OptWhitespace;
 
     # Parse an optional string, then a number, then CRLF.
     var reply_to: bytes;
@@ -187,7 +196,9 @@ type Msg = unit {
 
 type HMsg = unit {
     subject: bytes &max-size=MAX_SIZE &until=b" ";
+    : OptWhitespace;
     sid: bytes &max-size=MAX_SIZE &until=b" ";
+    : OptWhitespace;
 
     # Parse an optional string, then a number, then space.
     var reply_to: bytes;
