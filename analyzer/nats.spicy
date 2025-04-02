@@ -10,10 +10,8 @@ type SizedBytes = unit {
 # Whitespace is optional in many places
 const OptWhitespace = /[ \t]*/;
 
-# TODO: Make these insensitive, current Spicy main with insensitive regex fails right now,
-# see https://github.com/zeek/zeek/issues/4238
-const ClientCommands = /(CONNECT|PUB|HPUB|SUB|UNSUB|PING|PONG)/;
-const ServerCommands = /(INFO|MSG|HMSG|PING|PONG|+OK|-ERR)/;
+const ClientCommands = /(CONNECT|PUB|HPUB|SUB|UNSUB|PING|PONG)/i;
+const ServerCommands = /(INFO|MSG|HMSG|PING|PONG|+OK|-ERR)/i;
 
 type Command = enum {
     INFO,
