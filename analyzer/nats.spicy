@@ -7,6 +7,11 @@ type SizedBytes = unit {
     data: bytes &until=b"\x0d\x0a" &max-size=MAX_SIZE;
 } &convert=self.data;
 
+# Payloads are often given a size and may contain CRLF, so they need special handling
+type SizedPayload = unit(size: uint64) {
+    payload: bytes &size=size + 2 &requires=$$.ends_with(b"\x0d\x0a");
+} &convert=self.payload.sub(self.payload.at(size));
+
 # Whitespace is optional in many places
 const OptWhitespace = /[ \t]*/;
 
@@ -124,8 +129,9 @@ type Pub = unit {
         self.num_bytes = $2.to_uint();
     }
 
-    # TODO: This should just be num_bytes size
-    payload: SizedBytes;
+    # This is num_bytes bytes followed by CRLF
+    payload: SizedPayload(self.num_bytes);
+    #bytes &size=self.num_bytes + 2 &requires=$$.ends_with(b"\x0d\x0a") &convert=$$.sub($$.at(self.num_bytes));
 };
 
 type HPub = unit {
