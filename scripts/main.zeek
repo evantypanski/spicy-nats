@@ -8,7 +8,7 @@ export {
 
 	## The ports to register NATS for.
 	const ports = {
-		# TODO: Replace with actual port(s).
+	# TODO: Replace with actual port(s).
 		4222/tcp,
 	} &redef;
 
@@ -23,10 +23,10 @@ export {
 
 		# TODO: Adapt subsequent fields as needed.
 
-		## Request-side payload.
-		request: string &optional &log;
-		## Response-side payload.
-		reply: string &optional &log;
+		## The command executed.
+		command: string &optional &log;
+		## The payload of the command.
+		payload: string &optional &log;
 	};
 
 	## A default logging policy hook for the stream.
@@ -43,11 +43,12 @@ redef record connection += {
 	nats: Info &optional;
 };
 
-redef likely_server_ports += { ports };
+redef likely_server_ports += {ports};
 
 event zeek_init() &priority=5
 	{
-	Log::create_stream(NATS::LOG, [$columns=Info, $ev=log_nats, $path="nats", $policy=log_policy]);
+	Log::create_stream(NATS::LOG, [$columns=Info, $ev=log_nats, $path="nats",
+	    $policy=log_policy]);
 
 	Analyzer::register_for_ports(Analyzer::ANALYZER_NATS, ports);
 	}
@@ -76,7 +77,7 @@ event NATS::request(c: connection, is_orig: bool, message: NATS::ClientData)
 	{
 	hook set_session(c);
 
-    #print "client", message;
+	#print "client", message;
 	}
 
 # Example event defined in nats.evt.
@@ -85,7 +86,17 @@ event NATS::reply(c: connection, is_orig: bool, message: NATS::ServerData)
 	hook set_session(c);
 
 	local info = c$nats;
-    #print "reply", message;
+	#print "reply", message;
+	}
+
+event NATS::connect(c: connection, keyval: table[string] of string)
+	{
+	print keyval;
+	hook set_session(c);
+
+	local info = c$nats;
+	info$command = "CONNECT";
+	#info$payload = keyval;
 	}
 
 hook finalize_nats(c: connection)

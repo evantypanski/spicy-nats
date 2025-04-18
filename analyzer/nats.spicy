@@ -96,7 +96,7 @@ type KeyVal = unit {
     : OptWhitespace;
     pairs: KeyValPair[];
     : b"}";
-};
+} &convert=to_map(self);
 
 type Info = unit {
     payload: KeyVal;
@@ -219,3 +219,13 @@ type HMsg = unit {
 type Err = unit {
     message: SizedBytes;
 };
+
+function to_map(keyval: KeyVal): map<bytes, bytes> {
+    local res: map<bytes, bytes> = map();
+
+    for (pair in keyval.pairs) {
+        res[pair.key] = pair.val;
+    }
+
+    return res;
+}

@@ -8,6 +8,9 @@ protocol analyzer NATS over TCP:
 export NATS::Command;
 export NATS::ClientData;
 export NATS::ServerData;
+export NATS::KeyVal;
 
 on NATS::ClientData -> event NATS::request($conn, $is_orig, self);
 on NATS::ServerData -> event NATS::reply($conn, $is_orig, self);
+
+on NATS::ClientData if (self.message_type == NATS::Command::CONNECT) -> event NATS::connect($conn, self.connect.payload);
