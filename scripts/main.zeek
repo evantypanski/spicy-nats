@@ -8,7 +8,6 @@ export {
 
 	## The ports to register NATS for.
 	const ports = {
-	# TODO: Replace with actual port(s).
 		4222/tcp,
 	} &redef;
 
@@ -73,33 +72,51 @@ function emit_log(c: connection)
 	}
 
 # Example event defined in nats.evt.
-event NATS::request(c: connection, is_orig: bool, message: NATS::ClientData)
+event NATS::request(c: connection, message: NATS::ClientData)
 	{
 	hook set_session(c);
-
-	#print "client", message;
 	}
 
 # Example event defined in nats.evt.
-event NATS::reply(c: connection, is_orig: bool, message: NATS::ServerData)
+event NATS::reply(c: connection, message: NATS::ServerData)
 	{
 	hook set_session(c);
 
 	local info = c$nats;
-	#print "reply", message;
 	}
 
 event NATS::connect(c: connection, keyval: table[string] of string)
 	{
-	print keyval;
 	hook set_session(c);
 
 	local info = c$nats;
 	info$command = "CONNECT";
 	#info$payload = keyval;
+	emit_log(c);
+	}
+
+event NATS::info_message(c: connection, keyval: table[string] of string)
+	{
+	hook set_session(c);
+
+	local info = c$nats;
+	info$command = "INFO";
+	#info$payload = keyval;
+	emit_log(c);
+	}
+
+event NATS::error(c: connection, message: string)
+	{
+	hook set_session(c);
+
+	local info = c$nats;
+	info$command = "ERR";
+	info$payload = message;
+	emit_log(c);
 	}
 
 hook finalize_nats(c: connection)
 	{
-	emit_log(c);
+	# TODO: Real logging stuff
+	#emit_log(c);
 	}

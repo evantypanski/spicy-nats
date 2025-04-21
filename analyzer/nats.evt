@@ -10,7 +10,10 @@ export NATS::ClientData;
 export NATS::ServerData;
 export NATS::KeyVal;
 
-on NATS::ClientData -> event NATS::request($conn, $is_orig, self);
-on NATS::ServerData -> event NATS::reply($conn, $is_orig, self);
+on NATS::ClientData -> event NATS::request($conn, self);
+on NATS::ServerData -> event NATS::reply($conn, self);
 
 on NATS::ClientData if (self.message_type == NATS::Command::CONNECT) -> event NATS::connect($conn, self.connect.payload);
+
+on NATS::ServerData if (self.message_type == NATS::Command::INFO) -> event NATS::info_message($conn, self.info.payload);
+on NATS::ServerData if (self.message_type == NATS::Command::ERR) -> event NATS::error($conn, self.err.message);

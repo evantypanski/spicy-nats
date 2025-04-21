@@ -4,12 +4,24 @@
 # @TEST-EXEC: btest-diff output
 # @TEST-EXEC: btest-diff nats.log
 
-event NATS::request(c: connection, is_orig: bool, message: NATS::ClientData)
-    {
-    print fmt("Testing NATS: [request] %s %s", c$id, message);
-    }
+event NATS::connect(c: connection, keyval: table[string] of string)
+	{
+	print "CONNECT command content:";
+	for ( key, val in keyval )
+		{
+		print fmt("%s -> %s", key, val);
+		}
 
-event NATS::reply(c: connection, is_orig: bool, message: NATS::ServerData)
-    {
-    print fmt("Testing NATS: [reply] %s %s", c$id, message);
-    }
+	print "DONE";
+	}
+
+event NATS::info_message(c: connection, keyval: table[string] of string)
+	{
+	print "INFO command content:";
+	for ( key, val in keyval )
+		{
+		print fmt("%s -> %s", key, val);
+		}
+
+	print "DONE";
+	}
