@@ -20,8 +20,6 @@ export {
 		## The connection's 4-tuple of endpoint addresses/ports.
 		id: conn_id &log;
 
-		# TODO: Adapt subsequent fields as needed.
-
 		## The command executed.
 		command: string &optional &log;
 		## The payload of the command.
@@ -33,9 +31,6 @@ export {
 
 	## Default hook into NATS logging.
 	global log_nats: event(rec: Info);
-
-	## NATS finalization hook.
-	global finalize_nats: Conn::RemovalHook;
 }
 
 redef record connection += {
@@ -59,7 +54,6 @@ hook set_session(c: connection)
 		return;
 
 	c$nats = Info($ts=network_time(), $uid=c$uid, $id=c$id);
-	Conn::register_removal_hook(c, finalize_nats);
 	}
 
 function emit_log(c: connection)
@@ -69,20 +63,6 @@ function emit_log(c: connection)
 
 	Log::write(NATS::LOG, c$nats);
 	delete c$nats;
-	}
-
-# Example event defined in nats.evt.
-event NATS::request(c: connection, message: NATS::ClientData)
-	{
-	hook set_session(c);
-	}
-
-# Example event defined in nats.evt.
-event NATS::reply(c: connection, message: NATS::ServerData)
-	{
-	hook set_session(c);
-
-	local info = c$nats;
 	}
 
 event NATS::connect(c: connection, keyval: table[string] of string)
@@ -113,10 +93,4 @@ event NATS::error(c: connection, message: string)
 	info$command = "ERR";
 	info$payload = message;
 	emit_log(c);
-	}
-
-hook finalize_nats(c: connection)
-	{
-	# TODO: Real logging stuff
-	#emit_log(c);
 	}
