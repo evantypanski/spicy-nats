@@ -80,12 +80,38 @@ public type ServerData = unit {
     };
 };
 
+function get_bytes(val: OptionValue): bytes {
+    if (val?.bool_) return val.bool_;
+    if (val?.string_) return val.string_;
+    if (val?.num) return val.num;
+    if (val?.list_) return b"".join(val.list_);
+
+    # TODO: Unreachable?
+    return b"";
+}
+# A typed value for options in key/value pairs
+type OptionValue = unit {
+    switch {
+        -> bool_: /true|false/;
+        -> string_: /"[^"]*"/;
+        -> num: /[[:digit:]]+/;
+        -> {
+            : b"[";
+            # TODO: Right now only string lists exist, may be worth to generalize.
+            # Generalizing (currently) makes this recursive.
+            # TODO: Remove comma, it's just annoying to do otherwise
+            list_: /"[^"]*"[,]?/[];
+            : b"]";
+        }
+    };
+};
+
 type KeyValPair = unit {
     # TODO: this is string only
     key: bytes &until=b":";
     : OptWhitespace;
     # TODO: Escaped quotes
-    val: /(true|false)|"[^"]*"|[[:digit:]]+/;
+    val: OptionValue &convert=get_bytes($$);
     : OptWhitespace;
     : /,?/;
     : OptWhitespace;
