@@ -86,54 +86,61 @@ function get_bytes(val: OptionValue): bytes {
     if (val?.num) return val.num;
     if (val?.list_) return b"".join(val.list_);
 
-    # TODO: Unreachable?
-    return b"";
+    throw "unrecognized value type in option map";
 }
+
+# TODO: Escaping quotes
+const StringVal = /"[^"]*"/;
+
+# This is (possibly) necessary to pair an option value with a comma. Ugh.
+type OptionValueListElement = unit {
+    val: OptionValue;
+    : OptWhitespace;
+    : /[,]?/;
+} &convert=self.val;
+
 # A typed value for options in key/value pairs
 type OptionValue = unit {
     switch {
         -> bool_: /true|false/;
-        -> string_: /"[^"]*"/;
+        -> string_: StringVal;
         -> num: /[[:digit:]]+/;
         -> {
             : b"[";
-            # TODO: Right now only string lists exist, may be worth to generalize.
-            # Generalizing (currently) makes this recursive.
-            # TODO: Remove comma, it's just annoying to do otherwise
-            list_: /"[^"]*"[,]?/[];
+            list_: OptionValueListElement[];
             : b"]";
         }
     };
-};
+} &max-size=MAX_SIZE &convert=get_bytes(self);
 
 type KeyValPair = unit {
-    # TODO: this is string only
-    key: bytes &until=b":";
+    key: StringVal;
     : OptWhitespace;
-    # TODO: Escaped quotes
-    val: OptionValue &convert=get_bytes($$);
+    : skip b":";
+    : OptWhitespace;
+    val: OptionValue;
     : OptWhitespace;
     : /,?/;
     : OptWhitespace;
 };
 
 type KeyVal = unit {
-    : b"{";
+    : skip b"{";
     : OptWhitespace;
     pairs: KeyValPair[];
-    : b"}";
+    : skip b"}";
 } &convert=to_map(self);
 
 type Info = unit {
     payload: KeyVal;
     : OptWhitespace;
-    : b"\x0d\x0a";
+    : skip b"\x0d\x0a";
 };
 
 type Connect = unit {
     payload: KeyVal;
     : OptWhitespace;
-    : b"\x0d\x0a";
+    : skip b"\x0d\x0a";
 };
 
 type Pub = unit {
@@ -170,7 +177,7 @@ type HPub = unit {
 
     # Note, two CRLF
     headers: KeyVal;
-    : b"\x0d\x0a\x0d\x0a";
+    : skip b"\x0d\x0a\x0d\x0a";
     payload: SizedBytes;
 };
 
@@ -238,7 +245,7 @@ type HMsg = unit {
 
     # Note, two CRLF
     headers: KeyVal;
-    : b"\x0d\x0a\x0d\x0a";
+    : skip b"\x0d\x0a\x0d\x0a";
     payload: SizedBytes;
 };
 
