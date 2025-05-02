@@ -6,13 +6,13 @@ module Zeek_NATS;
 import NATS;
 import zeek;
 
-# TODO: Protocol analyzers should confirm once they are reasonably sure that
-# they are indeed parsing the right protocol. Pick a unit that's a little bit
-# into the parsing process here.
-#
-# on NATS::SUITABLE_UNIT::%done {
-#     zeek::confirm_protocol();
-# }
+on NATS::ClientData::%done {
+    zeek::confirm_protocol();
+}
+
+on NATS::ServerData::%done {
+    zeek::confirm_protocol();
+}
 
 # Any error bubbling up to the top unit will trigger a protocol rejection.
 on NATS::ClientMessages::%error {
