@@ -20,9 +20,9 @@ export {
 		## The connection's 4-tuple of endpoint addresses/ports.
 		id: conn_id &log;
 
-		## The command executed.
-		command: string &optional &log;
-		## The payload of the command.
+		## The NATS protocol message.
+		message: string &optional &log;
+		## The payload of the message.
 		payload: string &optional &log;
 	};
 
@@ -65,13 +65,32 @@ function emit_log(c: connection)
 	delete c$nats;
 	}
 
+function stringify(tab: table[string] of string): string
+	{
+	local result: string = "{";
+	local first = T;
+	for ( key, val in tab )
+		{
+		if ( ! first )
+			result += ",";
+
+		result += key;
+		result += ":";
+		result += val;
+		first = F;
+		}
+	result += "}";
+
+	return result;
+	}
+
 event NATS::connect(c: connection, keyval: table[string] of string)
 	{
 	hook set_session(c);
 
 	local info = c$nats;
-	info$command = "CONNECT";
-	#info$payload = keyval;
+	info$message = "CONNECT";
+	info$payload = stringify(keyval);
 	emit_log(c);
 	}
 
@@ -80,8 +99,8 @@ event NATS::info_message(c: connection, keyval: table[string] of string)
 	hook set_session(c);
 
 	local info = c$nats;
-	info$command = "INFO";
-	#info$payload = keyval;
+	info$message = "INFO";
+	info$payload = stringify(keyval);
 	emit_log(c);
 	}
 
@@ -90,7 +109,7 @@ event NATS::error(c: connection, message: string)
 	hook set_session(c);
 
 	local info = c$nats;
-	info$command = "ERR";
+	info$message = "ERR";
 	info$payload = message;
 	emit_log(c);
 	}

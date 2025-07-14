@@ -5,14 +5,14 @@
 #unset_field	-
 #path	nats
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	command	payload
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	message	payload
 #types	time	string	addr	port	addr	port	string	string
-XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	127.0.0.1	60459	127.0.0.1	4222	INFO	-
-XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	127.0.0.1	60459	127.0.0.1	4222	CONNECT	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	127.0.0.1	60460	127.0.0.1	4222	INFO	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	127.0.0.1	60460	127.0.0.1	4222	CONNECT	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	127.0.0.1	60462	127.0.0.1	4222	INFO	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	127.0.0.1	60462	127.0.0.1	4222	CONNECT	-
-XXXXXXXXXX.XXXXXX	CtPZjS20MLrsMUOJi2	127.0.0.1	60463	127.0.0.1	4222	INFO	-
-XXXXXXXXXX.XXXXXX	CtPZjS20MLrsMUOJi2	127.0.0.1	60463	127.0.0.1	4222	CONNECT	-
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	127.0.0.1	60459	127.0.0.1	4222	INFO	{"headers":true,"go":"go1.23.4","server_name":"NCKKMG452ZVRIDZM2H6OKQVHNT3SADFNDKXILQNYIZAHUBWAIHMWP5QG","max_payload":1048576,"version":"2.10.23","client_ip":"127.0.0.1","jetstream":true,"client_id":21,"proto":1,"xkey":"XCXFCLADPBRDCJZ7FVC3FPSUUXUGEXK5OYULJQUCYAJRHITUCX3RBW4B","host":"0.0.0.0","server_id":"NCKKMG452ZVRIDZM2H6OKQVHNT3SADFNDKXILQNYIZAHUBWAIHMWP5QG","port":4222}
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	127.0.0.1	60459	127.0.0.1	4222	CONNECT	{"echo":true,"lang":"go","no_responders":true,"pedantic":false,"headers":true,"tls_required":false,"verbose":false,"name":"NATS CLI Version development","protocol":1,"version":"1.36.0"}
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	127.0.0.1	60460	127.0.0.1	4222	INFO	{"headers":true,"go":"go1.23.4","server_name":"NCKKMG452ZVRIDZM2H6OKQVHNT3SADFNDKXILQNYIZAHUBWAIHMWP5QG","max_payload":1048576,"version":"2.10.23","client_ip":"127.0.0.1","jetstream":true,"client_id":22,"proto":1,"xkey":"XCXFCLADPBRDCJZ7FVC3FPSUUXUGEXK5OYULJQUCYAJRHITUCX3RBW4B","host":"0.0.0.0","server_id":"NCKKMG452ZVRIDZM2H6OKQVHNT3SADFNDKXILQNYIZAHUBWAIHMWP5QG","port":4222}
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	127.0.0.1	60460	127.0.0.1	4222	CONNECT	{"echo":true,"lang":"go","no_responders":true,"pedantic":false,"headers":true,"tls_required":false,"verbose":false,"name":"NATS CLI Version development","protocol":1,"version":"1.36.0"}
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	127.0.0.1	60462	127.0.0.1	4222	INFO	{"headers":true,"go":"go1.23.4","server_name":"NCKKMG452ZVRIDZM2H6OKQVHNT3SADFNDKXILQNYIZAHUBWAIHMWP5QG","max_payload":1048576,"version":"2.10.23","client_ip":"127.0.0.1","jetstream":true,"client_id":23,"proto":1,"xkey":"XCXFCLADPBRDCJZ7FVC3FPSUUXUGEXK5OYULJQUCYAJRHITUCX3RBW4B","host":"0.0.0.0","server_id":"NCKKMG452ZVRIDZM2H6OKQVHNT3SADFNDKXILQNYIZAHUBWAIHMWP5QG","port":4222}
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	127.0.0.1	60462	127.0.0.1	4222	CONNECT	{"echo":true,"lang":"go","no_responders":true,"pedantic":false,"headers":true,"tls_required":false,"verbose":false,"name":"NATS CLI Version development","protocol":1,"version":"1.36.0"}
+XXXXXXXXXX.XXXXXX	CtPZjS20MLrsMUOJi2	127.0.0.1	60463	127.0.0.1	4222	INFO	{"headers":true,"go":"go1.23.4","server_name":"NCKKMG452ZVRIDZM2H6OKQVHNT3SADFNDKXILQNYIZAHUBWAIHMWP5QG","max_payload":1048576,"version":"2.10.23","client_ip":"127.0.0.1","jetstream":true,"client_id":24,"proto":1,"xkey":"XCXFCLADPBRDCJZ7FVC3FPSUUXUGEXK5OYULJQUCYAJRHITUCX3RBW4B","host":"0.0.0.0","server_id":"NCKKMG452ZVRIDZM2H6OKQVHNT3SADFNDKXILQNYIZAHUBWAIHMWP5QG","port":4222}
+XXXXXXXXXX.XXXXXX	CtPZjS20MLrsMUOJi2	127.0.0.1	60463	127.0.0.1	4222	CONNECT	{"echo":true,"lang":"go","no_responders":true,"pedantic":false,"headers":true,"tls_required":false,"verbose":false,"name":"NATS CLI Version development","protocol":1,"version":"1.36.0"}
 #close XXXX-XX-XX-XX-XX-XX
