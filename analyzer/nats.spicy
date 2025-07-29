@@ -89,8 +89,7 @@ function get_bytes(val: OptionValue): bytes {
     throw "unrecognized value type in option map";
 }
 
-# TODO: Escaping quotes
-const StringVal = /"[^"]*"/;
+const StringVal = /"(?:\\.|[^"\\])*"/;
 
 # This is (possibly) necessary to pair an option value with a comma. Ugh.
 type OptionValueListElement = unit {
