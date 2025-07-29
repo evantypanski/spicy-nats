@@ -156,8 +156,7 @@ type Pub = unit {
         self.num_bytes = $2.to_uint();
     }
 
-    # TODO: This should just be num_bytes size
-    payload: SizedBytes;
+    payload: SizedBytes &size=self.num_bytes;
 };
 
 type HPub = unit {
@@ -166,18 +165,18 @@ type HPub = unit {
 
     # Parse an optional string, then a number, then CRLF.
     var reply_to: bytes;
-    var num_bytes: int64;
+    var num_bytes: uint64;
 
     : /([^ \t\r\n]*)[ \t]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
         # Strip off possible whitespace
         self.reply_to = $1.strip();
-        self.num_bytes = $2.to_int();
+        self.num_bytes = $2.to_uint();
     }
 
     # Note, two CRLF
     headers: KeyVal;
     : skip b"\x0d\x0a\x0d\x0a";
-    payload: SizedBytes;
+    payload: SizedBytes &size=self.num_bytes;
 };
 
 type Sub = unit {
@@ -214,14 +213,14 @@ type Msg = unit {
 
     # Parse an optional string, then a number, then CRLF.
     var reply_to: bytes;
-    var num_bytes: int64;
+    var num_bytes: uint64;
 
     : /([^ \t\r\n]*)[ \t]*([[:digit:]])+\r\n/ &max-size=MAX_SIZE {
         self.reply_to = $1.strip();
-        self.num_bytes = $2.to_int();
+        self.num_bytes = $2.to_uint();
     }
 
-    payload: SizedBytes;
+    payload: SizedBytes &size=self.num_bytes;
 };
 
 type HMsg = unit {
